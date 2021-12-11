@@ -102,17 +102,7 @@ def load_data():
     data['direct visits (nov 2021)'] = data['website visits (nov 2021)'] * data['direct traffic (%, nov 2021)']
     data['unbounced website visits (nov 2021)'] = data['website visits (nov 2021)'] * (1-data['bounce rate (%, nov 2021)'])
     data['organic visits (nov 2021)'] = data['direct visits (nov 2021)'] + data['website visits (nov 2021)'] * data['search traffic (%, nov 2021)'] * (1-data['paid search (%, nov 2021)'])
-    data['log2 organic visits (nov 2021)'] = np.log2(data['organic visits (nov 2021)'] )
-    data['ln organic visits (nov 2021)'] = np.log(data['organic visits (nov 2021)'] )
-    data['log2 paid search visits (nov 2021)'] = np.log2(data['paid search visits (nov 2021)'])
-    data['ln paid search visits (nov 2021)'] = np.log(data['paid search visits (nov 2021)'])
-    data['ln LinkedIn followers (dec 2021)'] = np.log(data['LinkedIn followers (dec 2021)'])
     cols_to_keep.extend([
-        'ln LinkedIn followers (dec 2021)',
-        'log2 organic visits (nov 2021)', 
-        'ln organic visits (nov 2021)',
-        'ln paid search visits (nov 2021)', 
-        'log2 paid search visits (nov 2021)', 
         'paid search visits (nov 2021)', 
         'visits from LinkedIn (nov 2021)', 
         'organic visits (nov 2021)', 
