@@ -26,14 +26,6 @@ def load_data():
         'employees_support_dec_2021': 'support employees (dec 2021)',
         'employees_support_dec_2020': 'support employees (dec 2020)',
         'employees_support_growth_1y': 'YoY support employees (%, dec)',
-        'linkedin_followers': 'LinkedIn followers (dec 2021)',
-        'page_visits_nov_2021_thousands': 'website visits (nov 2021)',
-        'bounce_rate': 'bounce rate (%, nov 2021)',
-        'channel_direct': 'direct traffic (%, nov 2021)',
-        'channel_search': 'search traffic (%, nov 2021)',
-        'channel_social': 'social traffic (%, nov 2021)',
-        'search_paid': 'paid search (%, nov 2021)',
-        'social_linkedin': 'traffic from LinkedIn (%, nov 2021)'
     }, inplace=True)
 
     cols_to_keep = [
@@ -53,17 +45,7 @@ def load_data():
         'support employees (dec 2021)',
         'support employees (dec 2020)',
         'YoY support employees (%, dec)',
-        'LinkedIn followers (dec 2021)',
-        'website visits (nov 2021)',
-        'bounce rate (%, nov 2021)',
-        'direct traffic (%, nov 2021)',
-        'search traffic (%, nov 2021)',
-        'social traffic (%, nov 2021)',
-        'paid search (%, nov 2021)',
-        'traffic from LinkedIn (%, nov 2021)'
     ]
-
-    data['website visits (nov 2021)'] = data['website visits (nov 2021)'] * 1000
     data['MRR ($1M, nov 2021)'] = round(data['MRR_1K_USD_nov_2021'] / 1000)
     data['MRR ($1M, nov 2020)'] = round(data['MRR_1K_USD_nov_2020'] / 1000)
     data['YoY MRR (%, nov)'] = (data['MRR ($1M, nov 2021)'] - data['MRR ($1M, nov 2020)'])/data['MRR ($1M, nov 2020)']
@@ -92,23 +74,9 @@ def load_data():
         data[f'customer success:engineering employees (dec {year})'] =data[f'customer success employees (dec {year})'] / data[f'engineering employees (dec {year})']
         cols_to_keep.append(f'customer success:engineering employees (dec {year})')
 
-    # YoY growth in customer success and ratios
+    # YoY growth in customer success
     data['YoY customer success employees (%, dec)'] = (data['customer success employees (dec 2021)'] - data['customer success employees (dec 2020)']) / data['customer success employees (dec 2020)']
     cols_to_keep.extend(['YoY customer success employees (%, dec)'])
-    
-    # marketing
-    data['paid search visits (nov 2021)'] = data['website visits (nov 2021)'] * data['search traffic (%, nov 2021)'] * data['paid search (%, nov 2021)']
-    data['visits from LinkedIn (nov 2021)'] = data['website visits (nov 2021)'] * data['social traffic (%, nov 2021)'] * data['traffic from LinkedIn (%, nov 2021)']
-    data['direct visits (nov 2021)'] = data['website visits (nov 2021)'] * data['direct traffic (%, nov 2021)']
-    data['unbounced website visits (nov 2021)'] = data['website visits (nov 2021)'] * (1-data['bounce rate (%, nov 2021)'])
-    data['organic visits (nov 2021)'] = data['direct visits (nov 2021)'] + data['website visits (nov 2021)'] * data['search traffic (%, nov 2021)'] * (1-data['paid search (%, nov 2021)'])
-    cols_to_keep.extend([
-        'paid search visits (nov 2021)', 
-        'visits from LinkedIn (nov 2021)', 
-        'organic visits (nov 2021)', 
-        'unbounced website visits (nov 2021)', 
-        'direct visits (nov 2021)'
-    ])
     
     # additional filters
     data['growth source'] = np.where(data['sales:engineering employees (dec 2020)'] < 0.6, 'product-led growth?', 'sales-led growth?')
@@ -123,13 +91,12 @@ Through analysis of public **B2B SaaS companies**, I am aiming to answer the fol
 
 >**What should B2B SaaS startup do to grow the business?**
 > - [ ]  Hire more engineers to build new features?
-> - [ ]  Spend more on marketing?
 > - [ ]  Hire more salespeople?
 > - [ ]  Hire more support and customer success managers to take care of existing customers?
 
 **My hypothesis is that correct mix of employees (customer success, sales, engineering) may fuel mid-term and long-term growth of B2B SaaS startup.** 
 If this hypothesis is true, then the information about current mix of employees may enhance other financial and non-financial information (`not available to general public, incl. me`) 
-to make a better prediction of future revenues and help a startup to make better hiring decisions. 
+to make a better prediction of future revenues, while startups can make better hiring decisions. 
 
 ---------------
 
@@ -147,14 +114,14 @@ I ended up helping to drive new revenue and usage of almost all subscription pro
 
 As a result, I learned few things about **B2B SaaS** business and how correct hiring decisions and right focus may impact the growth:
 
-1. If you have few customers, you need to add more (quite obvious, I know).
-2. If you forget about existing customers, you will limit the mid-term and long-term growth (renewal will be a challenge, upsell/cross-sell is impossible).
-3. It is easier to upsell/cross-sell than to add new customer.
-4. When you sell to companies, you sell to specific people inside the company. These people switch jobs and if they use and like your product and company, 
+> 1. If you have few customers, you need to add more (quite obvious, I know).
+> 2. If you forget about existing customers, you will limit the mid-term and long-term growth (renewal will be a challenge, upsell/cross-sell is impossible).
+> 3. It is easier to upsell/cross-sell than to add new customer.
+> 4. When you sell to companies, you sell to specific people inside the company. These people switch jobs and if they use and like your product and company, 
 they will try to bring your product at their new job and will recommend to friends and colleagues (organic growth!).
 
 With above and other learnings in mind and without access to confidential information (financials, product usage, customers, etc),
-I believe just by looking at who work in the company, we can get few insights (more relevant to companies with **high-touch B2B SaaS model**).
+I believe just by looking at who work in the company, we can get few insights, helpful for growing B2B SaaS startups (probably more relevant to companies with **high-touch B2B SaaS model**).
 
 --------------
 ##### Product-led growth vs sales-led growth? Less than $1B run-rate vs more than $1B run-rate?
@@ -172,19 +139,19 @@ number of employees, what they do (in general terms according to **LinkedIn**), 
 
 With the information above, I can segment my dataset further that will help in understanding employee mix better. 
 
-First, from the ratio of number of salespeople to engineers (`sales:engineering employees`) we can guess if the company pursues product-led growth or sales-led growth strategy (or it is just slow in hiring sales).
+> 1. From the ratio of number of salespeople to engineers (`sales:engineering`) we can guess if the company pursues **product-led growth** or **sales-led growth strategy** (or it is just slow in hiring sales).
 
-Second, although all these companies are public, we still can divide them by run-rate: those with run-rate of roughly $1B+ and those who didn't achieve this milestone yet. 
+> 2. Although all these companies are public, we still can segment them by run-rate: those with run-rate of roughly $1B+ and those who didn't achieve this milestone yet. 
 The bigger company will have different challenges in growing. 
     """
     )
 
 growth_source = alt.Chart(data).mark_circle().encode(
-    x=alt.X('sales:engineering employees (dec 2021)'),
+    x=alt.X('sales:engineering employees (dec 2021)', title='sales:engineering (dec 2021)'),
     y=alt.Y('YoY MRR (%, nov)'),
     color=alt.Color('growth source', legend=alt.Legend(orient='top'), scale=alt.Scale(scheme='set1')),
     tooltip=['company', 'ticker'],
-    size='MRR ($1M, nov 2021)'
+    size=alt.Size('MRR ($1M, nov 2021)', legend=alt.Legend(orient='bottom', symbolFillColor='grey'), bin=alt.Bin(step=30))
 )
 
 small_big_split = alt.Chart(data).mark_circle().encode(
@@ -192,7 +159,7 @@ small_big_split = alt.Chart(data).mark_circle().encode(
     y=alt.Y('YoY MRR (%, nov)'),
     color=alt.Color('run-rate (estimate)',legend=alt.Legend(orient='top'), scale=alt.Scale(scheme='set2')),
     tooltip=['company', 'ticker'],
-    size='employees (dec 2021)'
+    size=alt.Size('employees (dec 2021)', legend=alt.Legend(orient='bottom', symbolFillColor='grey'), bin=alt.Bin(step=2000))
 )
 
 with col_strategy_size_charts:
@@ -213,63 +180,84 @@ For smaller companies, however, the picture is different.
 
 col_hiring_in_small, col_hiring_in_big = st.columns(2)
 
-engineering_hiring_in_small = alt.Chart(data[data['run-rate (estimate)']!='$1B+']).mark_circle().encode(
-    x=alt.X('YoY engineering employees (%, dec)'),
-    y=alt.Y('YoY MRR (%, nov)'),
-    color=alt.Color('growth source', legend=alt.Legend(orient='right'), scale=alt.Scale(scheme='set1')),
-    tooltip=['company', 'ticker'],
-    size=alt.Size('engineering employees (dec 2020)', legend=alt.Legend(orient='top', title='employees in engineering'))
-).properties(
-    height=250,
+def get_growth_scatter_plot(df, col_x, col_size, size_title, bin_step, col_x_title=None):
+    x_title = col_x_title if col_x_title else col_x
+    chart = alt.Chart(df).mark_circle().encode(
+        x=alt.X(
+            col_x,
+            title=x_title,
+        ),
+        y=alt.Y(
+            'YoY MRR (%, nov)', 
+            scale=alt.Scale(domain=(0,1)),
+            axis=alt.Axis(values=[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]),
+        ),
+        color=alt.Color(
+            'growth source', 
+            legend=alt.Legend(orient='top'), 
+            scale=alt.Scale(scheme='set1')
+        ),
+        tooltip=['company', 'ticker'],
+        size=alt.Size(
+            col_size, 
+            legend=alt.Legend(
+                orient='bottom', 
+                symbolFillColor='grey', 
+                title=size_title
+            ),
+            bin=alt.Bin(step=bin_step)
+        )
+    ).properties(
+        height=250,
+    )
+    return chart
+
+engineering_hiring_in_small = get_growth_scatter_plot(
+    df=data[data['run-rate (estimate)']!='$1B+'],
+    col_x='YoY engineering employees (%, dec)',
+    col_size='engineering employees (dec 2021)',
+    size_title='employees in engineering',
+    bin_step=200
 )
 
-sales_hiring_in_small = alt.Chart(data[data['run-rate (estimate)']!='$1B+']).mark_circle().encode(
-    x=alt.X('YoY sales employees (%, dec)'),
-    y=alt.Y('YoY MRR (%, nov)'),
-    color=alt.Color('growth source', legend=alt.Legend(orient='right'), scale=alt.Scale(scheme='set1')),
-    tooltip=['company', 'ticker'],
-    size=alt.Size('sales employees (dec 2020)', legend=alt.Legend(orient='top', title='employees in sales'))
-).properties(
-    height=250,
-)
-support_hiring_in_small = alt.Chart(data[data['run-rate (estimate)']!='$1B+']).mark_circle().encode(
-    x=alt.X('YoY customer success employees (%, dec)'),
-    y=alt.Y('YoY MRR (%, nov)'),
-    color=alt.Color('growth source', legend=alt.Legend(orient='right'), scale=alt.Scale(scheme='set1')),
-    tooltip=['company', 'ticker'],
-    size=alt.Size('customer success employees (dec 2020)', legend=alt.Legend(orient='top', title='employees in cust success'))
-).properties(
-    height=250,
+sales_hiring_in_small = get_growth_scatter_plot(
+    df=data[data['run-rate (estimate)']!='$1B+'],
+    col_x='YoY sales employees (%, dec)',
+    col_size='sales employees (dec 2021)',
+    size_title='employees in sales',
+    bin_step=200
 )
 
-engineering_hiring_in_big = alt.Chart(data[data['run-rate (estimate)']=='$1B+']).mark_circle().encode(
-    x=alt.X('YoY engineering employees (%, dec)'),
-    y=alt.Y('YoY MRR (%, nov)'),
-    color=alt.Color('growth source', legend=alt.Legend(orient='right'), scale=alt.Scale(scheme='set1')),
-    tooltip=['company', 'ticker'],
-    size=alt.Size('engineering employees (dec 2020)', legend=alt.Legend(orient='top', title='employees in engineering'))
-).properties(
-    height=250,
+support_hiring_in_small = get_growth_scatter_plot(
+    df=data[data['run-rate (estimate)']!='$1B+'],
+    col_x='YoY customer success employees (%, dec)',
+    col_size='customer success employees (dec 2021)',
+    size_title='employees in cust success',
+    bin_step=200
 )
 
-sales_hiring_in_big = alt.Chart(data[data['run-rate (estimate)']=='$1B+']).mark_circle().encode(
-    x=alt.X('YoY sales employees (%, dec)'),
-    y=alt.Y('YoY MRR (%, nov)'),
-    color=alt.Color('growth source', legend=alt.Legend(orient='right'), scale=alt.Scale(scheme='set1')),
-    tooltip=['company', 'ticker'],
-    size=alt.Size('sales employees (dec 2020)', legend=alt.Legend(orient='top', title='employees in sales'))
-).properties(
-    height=250,
+engineering_hiring_in_big = get_growth_scatter_plot(
+    df=data[data['run-rate (estimate)']=='$1B+'],
+    col_x='YoY engineering employees (%, dec)',
+    col_size='engineering employees (dec 2021)',
+    size_title='employees in engineering',
+    bin_step=400
 )
 
-support_hiring_in_big = alt.Chart(data[data['run-rate (estimate)']=='$1B+']).mark_circle().encode(
-    x=alt.X('YoY customer success employees (%, dec)'),
-    y=alt.Y('YoY MRR (%, nov)'),
-    color=alt.Color('growth source', legend=alt.Legend(orient='right'), scale=alt.Scale(scheme='set1')),
-    tooltip=['company', 'ticker'],
-    size=alt.Size('customer success employees (dec 2020)', legend=alt.Legend(orient='top', title='employees in cust success'))
-).properties(
-    height=250,
+sales_hiring_in_big = get_growth_scatter_plot(
+    df=data[data['run-rate (estimate)']=='$1B+'],
+    col_x='YoY sales employees (%, dec)',
+    col_size='sales employees (dec 2021)',
+    size_title='employees in sales',
+    bin_step=400
+)
+
+support_hiring_in_big = get_growth_scatter_plot(
+    df=data[data['run-rate (estimate)']=='$1B+'],
+    col_x='YoY customer success employees (%, dec)',
+    col_size='customer success employees (dec 2021)',
+    size_title='employees in cust success',
+    bin_step=600
 )
 
 with col_hiring_in_small: 
@@ -291,36 +279,60 @@ with col_hiring_in_big:
 
 """
 ---------------------------------
-##### How does revenue growth correlate with ratio of customer success managers to salespeople?
-
+##### How does revenue growth correlate with employee mix?
 """
 
-col_cust_sales_ratio_text, col_cust_sales_ratio_chart = st.columns(2)
+col_cust_sales_ratio_text, col_cust_sales_ratio_charts = st.columns(2)
 
-cust_sales_ratio_in_small = alt.Chart(data[data['run-rate (estimate)']!='$1B+']).mark_circle().encode(
-    x=alt.X('customer success:sales employees (dec 2020)'),
-    y=alt.Y('YoY MRR (%, nov)'),
-    color=alt.Color('growth source', legend=alt.Legend(orient='right'), scale=alt.Scale(scheme='set1')),
-    tooltip=['company', 'ticker'],
-    size='sales employees (dec 2020)',
+cust_sales_ratio_in_small = get_growth_scatter_plot(
+    df=data[data['run-rate (estimate)']!='$1B+'],
+    col_x='customer success:sales employees (dec 2021)',
+    col_size='sales employees (dec 2021)',
+    size_title='employees in sales',
+    bin_step=200,
+    col_x_title='customer success:sales (dec 2021)'
+)
+
+cust_engineering_ratio_in_small = get_growth_scatter_plot(
+    df=data[data['run-rate (estimate)']!='$1B+'],
+    col_x='customer success:engineering employees (dec 2021)',
+    col_size='engineering employees (dec 2021)',
+    size_title='employees in engineering',
+    bin_step=200,
+    col_x_title='customer success:engineering (dec 2021)'
 )
 
 with col_cust_sales_ratio_text: 
     st.write(
     """
-We saw previously that simply hiring more salespeople, engineers or customer success managers/support doesn't positively correlate with MRR growth for smaller companies as opposed to those who reached mileston of $1B run-rate. 
+Data shows that simply hiring more salespeople, engineers or customer success managers/support doesn't 
+positively correlate with MRR growth for smaller companies as opposed to those who reached milestone of $1B run-rate. 
 
-However, what seems to be relevant at this stage of growth is the ratio of customer success managers/support to salespeople. In other words, **for each account executive who will work on bringing new customers,
-a startup with high-touch SaaS model needs to have 1-2 employees who will support existing customers with deployment and usage.** 
+However, what seems to be relevant at this stage of growth are 
+* the ratio of customer success managers to salespeople (`customer success:sales`). 
+* the ratio of customer success managers to engineers (`customer success:engineering`)
+
+In other words, 
+> * for **each account executive** who will work on bringing new customers,
+a startup with high-touch SaaS model needs to have **1-2 employees who will support existing customers** with deployment, usage, and troubleshooting.
+
+> * for **each engineer** who will work on new features,
+a startup with SaaS model needs to have **1-2 employees who will support existing customers** with deployment, usage, and troubleshooting.
     """
     )
 
-with col_cust_sales_ratio_chart:
+with col_cust_sales_ratio_charts:
     st.caption('Companies with less than $1B run-rate')
-    st.altair_chart(cust_sales_ratio_in_small, use_container_width=True)  
-
+    st.altair_chart(cust_sales_ratio_in_small, use_container_width=True)
+    st.caption('Companies with less than $1B run-rate')
+    st.altair_chart(cust_engineering_ratio_in_small, use_container_width=True)  
 
 """
 ---------------------------------------------
+##### Is my hypothesis true?
 
+I would say it is not yet rejected based on the data I had :)
 """
+
+st.caption('Adilet Gaparov')
+st.caption("""https://adiletgaparov.com""")
