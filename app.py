@@ -180,7 +180,7 @@ For smaller companies, however, the picture is different.
 
 col_hiring_in_small, col_hiring_in_big = st.columns(2)
 
-def get_growth_scatter_plot(df, col_x, col_size, size_title, bin_step, col_x_title=None):
+def get_growth_scatter_plot(df, col_x, col_size, size_title, bin_step, col_x_title=None, height=250):
     x_title = col_x_title if col_x_title else col_x
     chart = alt.Chart(df).mark_circle().encode(
         x=alt.X(
@@ -189,7 +189,7 @@ def get_growth_scatter_plot(df, col_x, col_size, size_title, bin_step, col_x_tit
         ),
         y=alt.Y(
             'YoY MRR (%, nov)', 
-            scale=alt.Scale(domain=(0,1)),
+            scale=alt.Scale(domain=(0,0.7), clamp=True),
             axis=alt.Axis(values=[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]),
         ),
         color=alt.Color(
@@ -208,7 +208,7 @@ def get_growth_scatter_plot(df, col_x, col_size, size_title, bin_step, col_x_tit
             bin=alt.Bin(step=bin_step)
         )
     ).properties(
-        height=250,
+        height=height,
     )
     return chart
 
@@ -290,7 +290,8 @@ cust_sales_ratio_in_small = get_growth_scatter_plot(
     col_size='sales employees (dec 2021)',
     size_title='employees in sales',
     bin_step=200,
-    col_x_title='customer success:sales (dec 2021)'
+    col_x_title='customer success:sales (dec 2021)',
+    height=300
 )
 
 cust_engineering_ratio_in_small = get_growth_scatter_plot(
@@ -299,7 +300,8 @@ cust_engineering_ratio_in_small = get_growth_scatter_plot(
     col_size='engineering employees (dec 2021)',
     size_title='employees in engineering',
     bin_step=200,
-    col_x_title='customer success:engineering (dec 2021)'
+    col_x_title='customer success:engineering (dec 2021)',
+    height=300
 )
 
 with col_cust_sales_ratio_text: 
