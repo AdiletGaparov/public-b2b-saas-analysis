@@ -68,6 +68,12 @@ def load_data():
         data[f'customer success:sales employees (dec {year})'] = data[f'customer success employees (dec {year})'] / data[f'sales employees (dec {year})']
         cols_to_keep.append(f'customer success:sales employees (dec {year})')
 
+        data[f'support:sales employees (dec {year})'] = data[f'support employees (dec {year})'] / data[f'sales employees (dec {year})']
+        cols_to_keep.append(f'support:sales employees (dec {year})')
+
+        data[f'support:engineering employees (dec {year})'] = data[f'support employees (dec {year})'] / data[f'engineering employees (dec {year})']
+        cols_to_keep.append(f'support:engineering employees (dec {year})')
+
         data[f'sales:engineering employees (dec {year})'] =data[f'sales employees (dec {year})'] / data[f'engineering employees (dec {year})']
         cols_to_keep.append(f'sales:engineering employees (dec {year})')
 
@@ -77,7 +83,11 @@ def load_data():
     # YoY growth in customer success
     data['YoY customer success employees (%, dec)'] = (data['customer success employees (dec 2021)'] - data['customer success employees (dec 2020)']) / data['customer success employees (dec 2020)']
     cols_to_keep.extend(['YoY customer success employees (%, dec)'])
-    
+
+    data['YoY customer success:engineering (%, dec)'] = (data[f'customer success:engineering employees (dec 2021)'] - data[f'customer success:engineering employees (dec 2020)']) / data[f'customer success:engineering employees (dec 2020)']
+    data['YoY customer success:sales (%, dec)'] = (data[f'customer success:sales employees (dec 2021)'] - data[f'customer success:sales employees (dec 2020)']) / data[f'customer success:sales employees (dec 2020)']
+    cols_to_keep.extend(['YoY customer success:engineering (%, dec)', 'YoY customer success:sales (%, dec)'])
+
     # additional filters
     data['growth source'] = np.where(data['sales:engineering employees (dec 2020)'] < 0.6, 'product-led growth?', 'sales-led growth?')
     data['run-rate (estimate)'] = np.where(data['MRR ($1M, nov 2021)'] > 70, '$1B+', '<$1B')
@@ -105,7 +115,7 @@ to make a better prediction of future revenues, while startups can make better h
 This hypothesis is developed after reflecting upon my past work experience.
 
 Before becoming **Data Scientist**, I worked 2.5 years at **Microsoft** as a Sales Engineer / Customer Success Manager, 
-driving new revenue and consumption of **SaaS** products in the region of 9 countries. 
+driving new revenue and usage of **SaaS** products in the region of 9 countries. 
 
 During my time there (2016-2018) MSFT stock grew from $50 to $110, 
 which was driven by successful transformation into cloud leader and switch towards **subscription business model**.
@@ -115,13 +125,13 @@ I ended up helping to drive new revenue and usage of almost all subscription pro
 As a result, I learned few things about **B2B SaaS** business and how correct hiring decisions and right focus may impact the growth:
 
 > 1. If you have few customers, you need to add more (quite obvious, I know).
-> 2. If you forget about existing customers, you will limit the mid-term and long-term growth (renewal will be a challenge, upsell/cross-sell is impossible).
+> 2. If you forget about existing customers, you will limit the mid-term and long-term growth, because renewal will be a challenge, while upsell/cross-sell wil be impossible.
 > 3. It is easier to upsell/cross-sell than to add new customer.
 > 4. When you sell to companies, you sell to specific people inside the company. These people switch jobs and if they use and like your product and company, 
 they will try to bring your product at their new job and will recommend to friends and colleagues (organic growth!).
 
 With above and other learnings in mind and without access to confidential information (financials, product usage, customers, etc),
-I believe just by looking at who work in the company, we can get few insights, helpful for growing B2B SaaS startups (probably more relevant to companies with **high-touch B2B SaaS model**).
+I believe just by looking at who work in the company we can get few insights, helpful for growing B2B SaaS startups.
 
 --------------
 ##### Product-led growth vs sales-led growth? Less than $1B run-rate vs more than $1B run-rate?
@@ -131,8 +141,9 @@ col_strategy_size_text, col_strategy_size_charts = st.columns(2)
 with col_strategy_size_text:
     st.write(
     """
-My choice fell on public B2B SaaS companies mostly because their financial performance (**MRR**) is available. 
-The drawback of that choice is that their run-rate is likely higher than run-rate of a B2B SaaS startup that would be interested in **raising more money from VCs or through alternative funding**.
+My choice of dataset for analysis fell on public B2B SaaS companies mostly because their financial performance (**MRR**) is available. 
+The drawback of that choice is that their run-rate is likely higher than run-rate of a B2B SaaS startup that would be interested in **raising more money from VCs or through alternative funding** 
+and therefore derived insights may not be that applicable.
 
 There are **26** B2B SaaS public companies in my dataset. Besides estimate of MRR (quarterly revenue divided by 3) in November 2021 and November 2020, I collected from **LinkedIn** information such as 
 number of employees, what they do (in general terms according to **LinkedIn**), YoY change in employees count, and number of followers on **LinkedIn** (main social network for B2B sales).
@@ -180,16 +191,16 @@ For smaller companies, however, the picture is different.
 
 col_hiring_in_small, col_hiring_in_big = st.columns(2)
 
-def get_growth_scatter_plot(df, col_x, col_size, size_title, bin_step, col_x_title=None, height=250):
+def get_growth_scatter_plot(df, col_x, col_size, size_title, bin_step, col_x_title=None, height=250, max_y=0.7, clip=True):
     x_title = col_x_title if col_x_title else col_x
-    chart = alt.Chart(df).mark_circle().encode(
+    chart = alt.Chart(df).mark_circle(clip=clip).encode(
         x=alt.X(
             col_x,
             title=x_title,
         ),
         y=alt.Y(
             'YoY MRR (%, nov)', 
-            scale=alt.Scale(domain=(0,0.7), clamp=True),
+            scale=alt.Scale(domain=(0,max_y), clamp=False),
             axis=alt.Axis(values=[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]),
         ),
         color=alt.Color(
@@ -197,7 +208,7 @@ def get_growth_scatter_plot(df, col_x, col_size, size_title, bin_step, col_x_tit
             legend=alt.Legend(orient='top'), 
             scale=alt.Scale(scheme='set1')
         ),
-        tooltip=['company', 'ticker'],
+        tooltip=['company', 'ticker', 'YoY MRR (%, nov)', col_x, col_size],
         size=alt.Size(
             col_size, 
             legend=alt.Legend(
@@ -217,7 +228,8 @@ engineering_hiring_in_small = get_growth_scatter_plot(
     col_x='YoY engineering employees (%, dec)',
     col_size='engineering employees (dec 2021)',
     size_title='employees in engineering',
-    bin_step=200
+    bin_step=200,
+    max_y=0.6
 )
 
 sales_hiring_in_small = get_growth_scatter_plot(
@@ -225,7 +237,8 @@ sales_hiring_in_small = get_growth_scatter_plot(
     col_x='YoY sales employees (%, dec)',
     col_size='sales employees (dec 2021)',
     size_title='employees in sales',
-    bin_step=200
+    bin_step=200,
+    max_y=0.6
 )
 
 support_hiring_in_small = get_growth_scatter_plot(
@@ -233,7 +246,8 @@ support_hiring_in_small = get_growth_scatter_plot(
     col_x='YoY customer success employees (%, dec)',
     col_size='customer success employees (dec 2021)',
     size_title='employees in cust success',
-    bin_step=200
+    bin_step=200,
+    max_y=0.6
 )
 
 engineering_hiring_in_big = get_growth_scatter_plot(
@@ -282,59 +296,68 @@ with col_hiring_in_big:
 ##### How does revenue growth correlate with employee mix?
 """
 
-col_cust_sales_ratio_text, col_cust_sales_ratio_charts = st.columns(2)
+col_ratio_text, col_ratio_charts = st.columns(2)
 
-cust_sales_ratio_in_small = get_growth_scatter_plot(
+sales_engineering_ratio_in_small = get_growth_scatter_plot(
     df=data[data['run-rate (estimate)']!='$1B+'],
-    col_x='customer success:sales employees (dec 2021)',
-    col_size='sales employees (dec 2021)',
-    size_title='employees in sales',
-    bin_step=200,
-    col_x_title='customer success:sales (dec 2021)',
-    height=300
-)
-
-cust_engineering_ratio_in_small = get_growth_scatter_plot(
-    df=data[data['run-rate (estimate)']!='$1B+'],
-    col_x='customer success:engineering employees (dec 2021)',
-    col_size='engineering employees (dec 2021)',
+    col_x='sales:engineering employees (dec 2020)',
+    col_size='engineering employees (dec 2020)',
     size_title='employees in engineering',
-    bin_step=200,
-    col_x_title='customer success:engineering (dec 2021)',
-    height=300
+    bin_step=150,
+    col_x_title='sales:engineering (dec 2020)',
+    height=300,
+    max_y=0.5
 )
 
-with col_cust_sales_ratio_text: 
+success_engineering_ratio_in_small = get_growth_scatter_plot(
+    df=data[data['run-rate (estimate)']!='$1B+'],
+    col_x='customer success:engineering employees (dec 2020)',
+    col_size='engineering employees (dec 2020)',
+    size_title='employees in engineering',
+    bin_step=150,
+    col_x_title='customer success:engineering (dec 2020)',
+    height=300,
+    max_y=0.5
+)
+
+with col_ratio_text: 
     st.write(
     """
 Data shows that simply hiring more salespeople, engineers or customer success managers/support doesn't 
 positively correlate with MRR growth for smaller companies as opposed to those who reached milestone of $1B run-rate. 
 
 However, what seems to be relevant at this stage of growth are 
-* the ratio of customer success managers to salespeople (`customer success:sales`). 
+* the ratio of salespeople to engineers (`sales:engineering`). 
 * the ratio of customer success managers to engineers (`customer success:engineering`)
 
-In other words, 
-> * for **each account executive** who will work on bringing new customers,
-a startup with high-touch SaaS model needs to have **1-2 employees who will support existing customers** with deployment, usage, and troubleshooting.
+Sales-led strategy means by definition that you need to have strong sales organization to grow and 
+it makes sense that already public companies who found product-market fit are scaling by having more salespeople.
 
-> * for **each engineer** who will work on new features,
-a startup with SaaS model needs to have **1-2 employees who will support existing customers** with deployment, usage, and troubleshooting.
+Regardless of growth strategy choice, it seems like that having more customer success employees who will **support existing customers 
+with deployment, usage, and troubleshooting** correlates with revenue growth.
     """
     )
 
-with col_cust_sales_ratio_charts:
+with col_ratio_charts:
     st.caption('Companies with less than $1B run-rate')
-    st.altair_chart(cust_sales_ratio_in_small, use_container_width=True)
+    st.altair_chart(sales_engineering_ratio_in_small, use_container_width=True)
     st.caption('Companies with less than $1B run-rate')
-    st.altair_chart(cust_engineering_ratio_in_small, use_container_width=True)  
+    st.altair_chart(success_engineering_ratio_in_small, use_container_width=True)  
 
 """
 ---------------------------------------------
-##### Is my hypothesis true?
+##### So, is my hypothesis true? What is the recommendation then?
 
-I would say it is not yet rejected based on the data I had :)
+Any company who wants to be successful needs to be obsessed about its customers. 
+
+In B2B SaaS space it means that, in addition to having a product that solves customers' problems, 
+a B2B SaaS company should have **enough employees to support the customers** in their interactions with the product. 
+My data seems to show how many such employees is enough to have in comparison to engineers.
+
+To make it even more relevant and actionable for private B2B SaaS startups, 
+it would be interesting to analyze **employee mix in comparison to number of customers and contract size**, 
+so that early-stage B2B SaaS startups can plan their hiring decisions accordingly.
 """
 
-st.caption('Adilet Gaparov')
-st.caption("""https://adiletgaparov.com""")
+st.caption('analyzed and written by Adilet Gaparov')
+st.caption('https://adiletgaparov.com')
